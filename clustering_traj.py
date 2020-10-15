@@ -55,6 +55,8 @@ def build_distance_matrix(trajfile, noh, reorder, natoms, reorderexcl, nprocs):
 
   # build the distance matrix in parallel
   ldistmat = p.starmap(compute_distmat_line, inputiterator)
+  
+  print(" .......... len {}".format(len(ldistmat)))
 
   return np.asarray([x for n in ldistmat if len(n) > 0 for x in n])
 
@@ -440,6 +442,8 @@ if __name__ == '__main__':
     sys.exit(1)
 
   args = parser.parse_args()
+  
+  print(" ... {}".format(args.trajectory_file))
 
   # check input consistency manually since I did not find a good way to use FileType and have the behavior that I wanted
   if args.method not in ["single","complete","average","weighted","centroid","median","ward"]:
@@ -450,6 +454,8 @@ if __name__ == '__main__':
     print("The reorder method you selected with --reorder-method (%s) is not valid." % args.reorder_alg)
     sys.exit(1)
 
+  print(" ... check clusters_configurations")
+	
   if args.clusters_configurations:
     if args.clusters_configurations not in ["acr", "adf", "adfout", "alc", "arc", "bgf", "box", "bs", "c3d1", "c3d2", "cac", "caccrt", "cache", "cacint", "can", "car", "ccc", "cdx", "cdxml", "cht", "cif", "ck", "cml", "cmlr", "com", "copy", "crk2d", "crk3d", "csr", "cssr", "ct", "cub", "cube", "dmol", "dx", "ent", "fa", "fasta", "fch", "fchk", "fck", "feat", "fh", "fix", "fpt", "fract", "fs", "fsa", "g03", "g92", "g94", "g98", "gal", "gam", "gamin", "gamout", "gau", "gjc", "gjf", "gpr", "gr96", "gukin", "gukout", "gzmat", "hin", "inchi", "inp", "ins", "jin", "jout", "mcdl", "mcif", "mdl", "ml2", "mmcif", "mmd", "mmod", "mol", "mol2", "molden", "molreport", "moo", "mop", "mopcrt", "mopin", "mopout", "mpc", "mpd", "mpqc", "mpqcin", "msi", "msms", "nw", "nwo", "outmol", "pc", "pcm", "pdb", "png", "pov", "pqr", "pqs", "prep", "qcin", "qcout", "report", "res", "rsmi", "rxn", "sd", "sdf", "smi", "smiles", "sy2", "t41", "tdd", "test", "therm", "tmol", "txt", "txyz", "unixyz", "vmol", "xed", "xml", "xyz", "yob", "zin"]:
       print("The format you selected to save the clustered superposed configurations (%s) is not valid." % args.clusters_configurations)
@@ -462,6 +468,9 @@ if __name__ == '__main__':
   if len(os.path.splitext(args.outputclusters)[1]) == 0:
     args.outputclusters += ".dat"
 
+	
+  print(" ... 2")
+	
   if args.natoms_solute and not args.reorder:
     print("Specifying the number of solute atoms is only useful for the reordering algorithms, ignoring the number of solute atoms.")
     natoms = None
@@ -476,6 +485,8 @@ if __name__ == '__main__':
   else:
     reorder_excl = np.asarray([], np.int32)
 
+  print(" ... 3")
+	
   if args.reorder_alg == "hungarian":
     reorder_alg = rmsd.reorder_hungarian
   elif args.reorder_alg == "distance":
@@ -486,6 +497,9 @@ if __name__ == '__main__':
   if not args.reorder:
     reorder_alg = None
 
+	
+  print(" ... 4")
+	
   if not args.input:
     if not args.outputdistmat:
       args.outputdistmat = "distmat.dat"
@@ -500,19 +514,23 @@ if __name__ == '__main__':
   else:
     args.outputclusters = open(args.outputclusters,'wb')
 
+  print(" ... 5")
+	
   # check if distance matrix will be read from input or calculated
   # if a file is specified, read it (TODO: check if the matrix makes sense)
   if args.input:
-    print('\nReading condensed distance matrix from %s\n' % args.input.name)
+    print('\n ==========> Reading condensed distance matrix from %s\n' % args.input.name)
     distmat = np.loadtxt(args.input)
   # build a distance matrix already in the condensed form
   else:
-    print('\nCalculating distance matrix using %d threads\n' % args.nprocesses)
+    print('\n ==========> Calculating distance matrix using %d threads\n' % args.nprocesses)
     distmat = build_distance_matrix(args.trajectory_file, args.no_hydrogen, reorder_alg, natoms, reorder_excl, args.nprocesses)
     print('Saving condensed distance matrix to %s\n' % args.outputdistmat.name)
     np.savetxt(args.outputdistmat, distmat, fmt='%.18f')
     args.outputdistmat.close()
 
+  print(" ... 6")
+	
   # linkage
   print("Starting clustering using '%s' method to join the clusters\n" % args.method)
   Z = hcl.linkage(distmat, args.method)

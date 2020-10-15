@@ -1,3 +1,6 @@
+# ECO
+does not work
+
 # Clustering Trajectory
 This Python script receives a molecular dynamics or Monte Carlo trajectory (in .pdb, .xyz or any format supported by OpenBabel), finds the minimum RMSD between the structures with the Kabsch algorithm and performs agglomerative clustering (a kind of unsupervised machine learning) to classify similar conformations. 
 The script was developed with Python 3 in mind, however, it should work in Python 2.7 too, given that all the libraries are available.
